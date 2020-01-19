@@ -106,7 +106,7 @@ exports.update = (req, res) => {
     }
     let updateQuery = {
         number: req.body.number || '',
-        userName: req.body.name || '',
+        userName: req.body.userName || '',
         password: req.body.password || '',
         title: req.body.title || '',
         firstName: req.body.firstName || '',
@@ -129,15 +129,27 @@ exports.update = (req, res) => {
         updatedBy: userId
     };
     User.findOne({
-        mobileNo: req.body.mobileNo,
+        userName: req.body.userName,
         isActive: true
     }, {
         _id: 1.0,
-    }).then(result => {
-        if(!result || !result._id){
-            return _res.cError(res, 'Some error occurred while updating a record.');
+    }).then(uresult => {
+        if(!uresult || !uresult._id || uresult._id == req.params.id){
+            User.findByIdAndUpdate(req.params.id, updateQuery, {new: true})
+            .then(result => {
+                if(!result || !result._id){
+                    return _res.cError(res, 'Error updating record with id ' + req.params.id);
+                }
+                return _res.success(res, result._id);
+            }).catch(err => {
+                if(err.kind === 'ObjectId') {
+                    return _res.nError(res, 'Record not found with id ' + req.params.id);
+                }
+                return _res.error(res, 'Internal server error. Error updating record with id ' + req.params.id);
+            });    
+        }else{
+            return _res.cError(res, 'User with same user name already exists. So please try with different user name.');
         }
-        return _res.success(res, result._id);
     }).catch(err => {
         return _res.error(res, 'Internal server error. Error updating record with id ' + req.params.id);
     });
