@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 const UserSchema = mongoose.Schema({
+	customerId: { type: Schema.Types.ObjectId, default: null },
+	teamId: { type: Schema.Types.ObjectId, default: null },
 	number: String,
 	userName: String,
 	password: String,

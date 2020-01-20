@@ -2,7 +2,6 @@
 
 const User = require('../model/user');
 const _res = require('../util/response');
-const util = require('../util/index');
 
 // create and Save a new record
 exports.create = (req, res) => {
@@ -29,6 +28,8 @@ exports.create = (req, res) => {
         if(!mresult || !mresult._id){
             // create and save new object
             new User({
+                customerId: req.body.customerId || null,
+                teamId: req.body.teamId || null,
                 number: req.body.number || '',
                 userName: req.body.userName || '',
                 password: req.body.password || '',
@@ -105,6 +106,8 @@ exports.update = (req, res) => {
         return _res.vError(res, 'Validation failed. Please fill all the required fields.');
     }
     let updateQuery = {
+        customerId: req.body.customerId || null,
+        teamId: req.body.teamId || null,
         number: req.body.number || '',
         userName: req.body.userName || '',
         password: req.body.password || '',
