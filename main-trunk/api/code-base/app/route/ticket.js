@@ -12,6 +12,12 @@ module.exports = (app) => {
     // Retrieve all
     app.get(route + 's', middleware.checkToken, _ctrl.findAll);
 
+    // Retrieve all by customerId
+    app.get(route + 's/bycustomer/:id', middleware.checkToken, _ctrl.findAllByCustomer);
+
+    // Retrieve all by teamId
+    app.get(route + 's/byteam/:id', middleware.checkToken, _ctrl.findAllByTeam);
+
     // Retrieve single with id
     app.get(route + '/:id', middleware.checkToken, _ctrl.findOne);
 
@@ -25,12 +31,12 @@ module.exports = (app) => {
     app.put(route + '/status/:id', middleware.checkToken, _ctrl.statusUpdate);
 
     // Add response by ticket id
-    app.post(route + '/response/:id', middleware.checkToken, _ctrl.addComment);
+    app.post(route + '/response/:id', middleware.checkToken, _ctrl.addResponse);
 
     // Update response by id
-    app.put(route + '/response/:id', middleware.checkToken, _ctrl.updateComment);
+    app.put(route + '/response/:id', middleware.checkToken, _ctrl.updateResponse);
 
     // Delete response by id
-    app.delete(route + '/response/:id', middleware.checkToken, _ctrl.deleteComment);
+    app.delete(route + '/response/:id', middleware.checkToken, _ctrl.deleteResponse);
 
 };

@@ -37,6 +37,18 @@ exports.findAll = (req, res) => {
     });
 };
 
+// retrieve and return all records from the database.
+exports.findAllByCustomer = (req, res) => {
+    Team.find({
+        customerId: req.params.customerId,
+        isActive: true
+    }).then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
+    });
+};
+
 // find a single record with an id
 exports.findOne = (req, res) => {
     Team.findById(req.params.id)
@@ -75,8 +87,7 @@ exports.update = (req, res) => {
             return _res.nError(res, 'Record not found with id ' + req.params.id);
         }
         return _res.error(res, 'Internal server error. Error updating record with id ' + req.params.id);
-    });    
-        
+    });     
 };
 
 // delete a record with the specified id in the request

@@ -7,7 +7,7 @@ const _res = require('../util/response');
 exports.create = (req, res) => {
     let userId = req.headers['user-id'] || '';
     // validate request
-    if(!userId || !req.body.type || !req.body.subject || !req.body.priority || !req.body.customer || !req.body.status){
+    if(!userId || !req.body.type || !req.body.subject || !req.body.priority || !req.body.status){
         return _res.vError(res, 'Validation failed. Please fill all the required fields.');
     }
     // create and save new object
@@ -17,7 +17,8 @@ exports.create = (req, res) => {
         description: req.body.description || '',
         attachment: (req.body.attachment && req.body.attachment.lenght > 0) ? req.body.attachment : [],
         priority: req.body.priority || '',
-        customer: req.body.customer || '',
+        customer: req.body.customer || null,
+        team: req.body.team || null,
         status: req.body.status || '',
         latitude: req.body.latitude || 0,
         longitude: req.body.longitude || '',
@@ -47,6 +48,30 @@ exports.findAll = (req, res) => {
     });
 };
 
+// retrieve and return all records from the database customer Id.
+exports.findAllByCustomer = (req, res) => {
+    Ticket.find({
+        customer: req.params.id,
+        isActive: true
+    }).then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
+    });
+};
+
+// retrieve and return all records from the database by team Id.
+exports.findAllByTeam = (req, res) => {
+    Ticket.find({
+        team: req.params.id,
+        isActive: true
+    }).then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
+    });
+};
+
 // find a single record with an id
 exports.findOne = (req, res) => {
     Ticket.findById(req.params.id)
@@ -65,7 +90,37 @@ exports.findOne = (req, res) => {
 
 // update a record identified by id in the request
 exports.update = (req, res) => {
-    return _res.cError(res, 'Not implemented.');
+    let userId = req.headers['user-id'] || '';
+    // validate request
+    if(!userId || !req.body.type || !req.body.subject || !req.body.priority || !req.body.status){
+        return _res.vError(res, 'Validation failed. Please fill all the required fields.');
+    }
+    Ticket.findByIdAndUpdate(req.params.id, {
+        type: req.body.type || '',
+        subject: req.body.subject || '',
+        description: req.body.description || '',
+        attachment: (req.body.attachment && req.body.attachment.lenght > 0) ? req.body.attachment : [],
+        priority: req.body.priority || '',
+        customer: req.body.customer || null,
+        team: req.body.team || null,
+        status: req.body.status || '',
+        latitude: req.body.latitude || 0,
+        longitude: req.body.longitude || '',
+        location: req.body.location || '',
+        tags: (req.body.tags && req.body.tags.length > 0) ? req.body.tags : [],
+        updatedBy: userId
+    }, {new: true})
+    .then(result => {
+        if(!result || !result._id){
+            return _res.cError(res, 'Error updating record with id ' + req.params.id);
+        }
+        return _res.success(res, result._id);
+    }).catch(err => {
+        if(err.kind === 'ObjectId') {
+            return _res.nError(res, 'Record not found with id ' + req.params.id);
+        }
+        return _res.error(res, 'Internal server error. Error updating record with id ' + req.params.id);
+    });
 };
 
 // delete a record with the specified id in the request
@@ -156,7 +211,7 @@ exports.addResponse = (req, res) => {
 };
 
 // update response
-exports.updateComment = (req, res) => {
+exports.updateResponse = (req, res) => {
     if(!req.body.type || !req.body.comment || !req.params.id){
         return _res.vError(res, 'Validation failed. Please fill all the required fields.');
     }
@@ -184,7 +239,7 @@ exports.updateComment = (req, res) => {
 };
 
 // delete response
-exports.deleteComment = (req, res) => {
+exports.deleteResponse = (req, res) => {
     Ticket.update({
         'responses._id': req.params.id
     }, { 

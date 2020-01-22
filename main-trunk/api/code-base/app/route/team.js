@@ -12,6 +12,9 @@ module.exports = (app) => {
     // Retrieve all
     app.get(route + 's', middleware.checkToken, _ctrl.findAll);
 
+    // Retrieve all
+    app.get(route + 's/:customerId', middleware.checkToken, _ctrl.findAllByCustomer);
+
     // Retrieve single with id
     app.get(route + '/:id', middleware.checkToken, _ctrl.findOne);
 

@@ -82,6 +82,30 @@ exports.findAll = (req, res) => {
     });
 };
 
+// retrieve and return all records from the database customer Id.
+exports.findAllByCustomer = (req, res) => {
+    User.find({
+        customerId: req.params.id,
+        isActive: true
+    }).then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
+    });
+};
+
+// retrieve and return all records from the database by team Id.
+exports.findAllByTeam = (req, res) => {
+    User.find({
+        teamId: req.params.id,
+        isActive: true
+    }).then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
+    });
+};
+
 // find a single record with an id
 exports.findOne = (req, res) => {
     User.findById(req.params.id)
