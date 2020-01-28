@@ -22,7 +22,7 @@ module.exports = (app) => {
     app.get(route + '/:id', middleware.checkToken, _ctrl.findOne);
 
     // Update by id
-    app.put(route + '/:id', middleware.checkToken, _ctrl.update);
+    app.put(route + '/update/:id', middleware.checkToken, _ctrl.update);
 
     // Delete by id
     app.delete(route + '/:id', middleware.checkToken, _ctrl.delete);
