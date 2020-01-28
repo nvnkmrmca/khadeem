@@ -1,5 +1,6 @@
 "use strict";
 
+const mongoose = require('mongoose');
 const Ticket = require('../model/ticket');
 const _res = require('../util/response');
 
@@ -257,5 +258,64 @@ exports.deleteResponse = (req, res) => {
             return _res.nError(res, 'Record not found with id ' + req.params.id);
         }
         return _res.error(res, 'Internal server error. Could not delete record with id ' + req.params.id);
+    });
+};
+
+// retrieve and return all records from the database.
+exports.findAllTags = (req, res) => {
+    Ticket.aggregate([{
+               $project : {
+                   _id : 0,
+                   tags : 1
+               }
+           }, {
+               $unwind : "$tags"
+           }, {
+               $group : {
+                   _id : "$tags.name",
+                   count : {
+                       $sum : 1
+                   }
+               }
+           }
+       ])
+    .then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
+    });
+};
+
+// retrieve and return all records from the database customer Id.
+exports.findAllByTagsCustomer = (req, res) => {
+    Ticket.aggregate([
+        {
+               $match: {
+                   $and: [
+                       {
+                            customer: mongoose.Types.ObjectId(req.params.id)
+                       }
+                   ]
+               }
+           },
+       {
+               $project : {
+                   _id : 0,
+                   tags : 1
+               }
+           }, {
+               $unwind : "$tags"
+           }, {
+               $group : {
+                   _id : "$tags.name",
+                   count : {
+                       $sum : 1
+                   }
+               }
+           }
+       ]).then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
     });
 };

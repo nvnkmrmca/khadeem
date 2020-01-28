@@ -39,4 +39,10 @@ module.exports = (app) => {
     // Delete response by id
     app.delete(route + '/response/:id', middleware.checkToken, _ctrl.deleteResponse);
 
+    // Retrieve all tags
+    app.get(route + 's/tags', middleware.checkToken, _ctrl.findAllTags);
+
+    // Retrieve all tags by customerId
+    app.get(route + 's/tagsbycustomer/:id', middleware.checkToken, _ctrl.findAllByTagsCustomer);
+
 };
