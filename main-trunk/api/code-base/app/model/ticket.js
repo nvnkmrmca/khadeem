@@ -31,6 +31,7 @@ const TicketSchema = mongoose.Schema({
 	priority: String,
 	customer: { type: Schema.Types.ObjectId, default: null },
 	team: { type: Schema.Types.ObjectId, default: null },
+	assignedTo: { type: Schema.Types.ObjectId, default: null }, 
 	status: String,
 	latitude: String,
 	longitude: String,

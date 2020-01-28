@@ -30,6 +30,9 @@ module.exports = (app) => {
     // status update
     app.put(route + '/status/:id', middleware.checkToken, _ctrl.statusUpdate);
 
+    // assing team
+    app.put(route + '/assign/:id', middleware.checkToken, _ctrl.assignUser);
+
     // Add response by ticket id
     app.post(route + '/response/:id', middleware.checkToken, _ctrl.addResponse);
 

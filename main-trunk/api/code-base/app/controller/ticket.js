@@ -170,6 +170,30 @@ exports.statusUpdate = (req, res) => {
     });
 };
 
+// assign team for a ticket
+exports.assignUser = (req, res) => {
+    let userId = req.headers['user-id'] || '';
+    // validate request
+    if(!userId || !req.body.assignedTo){
+        return _res.vError(res, 'Validation failed. Please fill all the required fields.');
+    }
+    Ticket.findByIdAndUpdate(req.params.id, {
+        assignedTo: req.body.assignedTo,
+        updatedBy: userId || null
+    }, {new: true})
+    .then(result => {
+        if(!result || !result._id){
+            return _res.cError(res, 'Could not assing user to ticket with id ' + req.params.id);
+        }
+        return _res.success(res, true, 'User assigned to ticket successfully.');
+    }).catch(err => {
+        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+            return _res.nError(res, 'Record not found with id ' + req.params.id);
+        }
+        return _res.error(res, 'Internal server error. Could not delete record with id ' + req.params.id);
+    });
+};
+
 // add response to a ticket
 exports.addResponse = (req, res) => {
     if(!req.body.type || !req.body.comment || !req.params.id){
