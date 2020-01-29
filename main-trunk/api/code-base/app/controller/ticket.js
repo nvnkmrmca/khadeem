@@ -288,6 +288,15 @@ exports.deleteResponse = (req, res) => {
 // retrieve and return all records from the database.
 exports.findAllTags = (req, res) => {
     Ticket.aggregate([{
+        $match: {
+            $and: [
+                {
+                     isActive: true
+                }
+            ]
+        }
+    },
+    {
                $project : {
                    _id : 0,
                    tags : 1
@@ -317,7 +326,8 @@ exports.findAllByTagsCustomer = (req, res) => {
                $match: {
                    $and: [
                        {
-                            customer: mongoose.Types.ObjectId(req.params.id)
+                            customer: mongoose.Types.ObjectId(req.params.id),
+                            isActive: true
                        }
                    ]
                }
