@@ -20,7 +20,16 @@ const upload = multer({ storage: Storage });
 
 module.exports = (app) => {
     // upload
-    app.post(route, middleware.checkToken, upload.single('file'), (req, res,next) => {
+    app.post(route, middleware.checkToken, (req, res, next) => {
+      upload.single('file')(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+          // A Multer error occurred when uploading.
+          return res.send(err);
+        } else if (err) {
+          return res.send(err);
+        }
+        // Everything went fine.
         return res.send({ data: true, message: '' });
+      });
     });
 };

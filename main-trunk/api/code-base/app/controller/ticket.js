@@ -61,6 +61,28 @@ exports.findAllByCustomer = (req, res) => {
     });
 };
 
+// retrieve and return all records from the database customer Id.
+exports.findMy = (req, res) => {
+    let userId = req.headers['user-id'] || '';
+    // validate request
+    if(!userId){
+        return _res.vError(res, 'Validation failed. Please fill all the required fields.');
+    }
+    Ticket.find({
+        $and: [
+            { $or: [
+                {createdBy: userId}, 
+                {assignedTo: userId}
+            ]},
+            {isActive: true}
+        ]
+    }).then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
+    });
+};
+
 // retrieve and return all records from the database by team Id.
 exports.findAllByTeam = (req, res) => {
     Ticket.find({
@@ -186,6 +208,30 @@ exports.assignUser = (req, res) => {
             return _res.cError(res, 'Could not assing user to ticket with id ' + req.params.id);
         }
         return _res.success(res, true, 'User assigned to ticket successfully.');
+    }).catch(err => {
+        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+            return _res.nError(res, 'Record not found with id ' + req.params.id);
+        }
+        return _res.error(res, 'Internal server error. Could not delete record with id ' + req.params.id);
+    });
+};
+
+//update due date for a ticket
+exports.updateDueDate = (req, res) => {
+    let userId = req.headers['user-id'] || '';
+    // validate request
+    if(!userId || !req.body.dueDate){
+        return _res.vError(res, 'Validation failed. Please fill all the required fields.');
+    }
+    Ticket.findByIdAndUpdate(req.params.id, {
+        dueDate: req.body.dueDate,
+        updatedBy: userId || null
+    }, {new: true})
+    .then(result => {
+        if(!result || !result._id){
+            return _res.cError(res, 'Could not update due date to ticket with id ' + req.params.id);
+        }
+        return _res.success(res, true, 'Due date updated successfully.');
     }).catch(err => {
         if(err.kind === 'ObjectId' || err.name === 'NotFound') {
             return _res.nError(res, 'Record not found with id ' + req.params.id);
@@ -348,6 +394,102 @@ exports.findAllByTagsCustomer = (req, res) => {
                }
            }
        ]).then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
+    });
+};
+
+// retrieve and return all records from the database customer Id.
+exports.search = (req, res) => {
+    let userId = req.headers['user-id'] || '';
+    // validate request
+    if(!userId){
+        return _res.vError(res, 'Validation failed. Please fill all the required fields.');
+    }
+    let query = {
+        isActive: true
+    };
+    if(req.body.status){
+        query.status = req.body.status;
+    }
+    if(req.body.priority){
+        query.priority = req.body.priority;
+    }
+    if(req.body.assignedTo){
+        query.assignedTo = req.body.assignedTo;
+    }
+    if(req.body.type){
+        query.type = req.body.type;
+    }
+    if(req.body.subject){
+        query.subject = req.body.subject;
+    }
+    if(req.body.tag){
+        query.tag.name = req.body.tag;
+    }
+    if(req.body.location){
+        query.location = req.body.location;
+    }
+    if(req.body.customer){
+        query.customer = req.body.customer;
+    }
+    if(req.body.team){
+        query.team = req.body.team;
+    }
+    Ticket.find(query).then(result => {
+        return _res.success(res, result);
+    }).catch(err => {
+        return _res.error(res, err.message || 'Some error occurred while retrieving data.');
+    });
+};
+
+// retrieve and return all records from the database customer Id.
+exports.searchMy = (req, res) => {
+    let userId = req.headers['user-id'] || '';
+    // validate request
+    if(!userId){
+        return _res.vError(res, 'Validation failed. Please fill all the required fields.');
+    }
+    let query = {
+        isActive: true
+    };
+    if(req.body.status){
+        query.status = req.body.status;
+    }
+    if(req.body.priority){
+        query.priority = req.body.priority;
+    }
+    if(req.body.assignedTo){
+        query.assignedTo = req.body.assignedTo;
+    }
+    if(req.body.type){
+        query.type = req.body.type;
+    }
+    if(req.body.subject){
+        query.subject = req.body.subject;
+    }
+    if(req.body.tag){
+        query.tag.name = req.body.tag;
+    }
+    if(req.body.location){
+        query.location = req.body.location;
+    }
+    if(req.body.customer){
+        query.customer = req.body.customer;
+    }
+    if(req.body.team){
+        query.team = req.body.team;
+    }
+    Ticket.find({
+        $and: [
+            { $or: [
+                {createdBy: userId}, 
+                {assignedTo: userId}
+            ]},
+            query
+        ]
+    }).then(result => {
         return _res.success(res, result);
     }).catch(err => {
         return _res.error(res, err.message || 'Some error occurred while retrieving data.');

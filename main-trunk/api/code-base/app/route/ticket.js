@@ -18,6 +18,9 @@ module.exports = (app) => {
     // Retrieve all by teamId
     app.get(route + 's/byteam/:id', middleware.checkToken, _ctrl.findAllByTeam);
 
+    // Retrieve my tickets
+    app.get(route + 's/my', middleware.checkToken, _ctrl.findMy);
+
     // Retrieve single with id
     app.get(route + '/:id', middleware.checkToken, _ctrl.findOne);
 
@@ -30,8 +33,11 @@ module.exports = (app) => {
     // status update
     app.put(route + '/status/:id', middleware.checkToken, _ctrl.statusUpdate);
 
-    // assing team
+    // assing user
     app.put(route + '/assign/:id', middleware.checkToken, _ctrl.assignUser);
+
+    // update due date
+    app.put(route + '/duedate/:id', middleware.checkToken, _ctrl.updateDueDate);
 
     // Add response by ticket id
     app.post(route + '/response/:id', middleware.checkToken, _ctrl.addResponse);
@@ -48,4 +54,9 @@ module.exports = (app) => {
     // Retrieve all tags by customerId
     app.get(route + 's/tagsbycustomer/:id', middleware.checkToken, _ctrl.findAllByTagsCustomer);
 
+    // Search
+    app.post(route + '/search', middleware.checkToken, _ctrl.search);
+    
+    // Search My
+    app.post(route + '/searchmy', middleware.checkToken, _ctrl.searchMy);
 };
