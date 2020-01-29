@@ -2,7 +2,9 @@
 
 const mongoose = require('mongoose');
 const Ticket = require('../model/ticket');
+const User = require('../model/user');
 const _res = require('../util/response');
+const util = require("../util/index");
 
 // create and Save a new record
 exports.create = (req, res) => {
@@ -77,7 +79,7 @@ exports.findMy = (req, res) => {
             {isActive: true}
         ]
     }).then(result => {
-        return _res.success(res, result);
+        arrayResponse(result, res);
     }).catch(err => {
         return _res.error(res, err.message || 'Some error occurred while retrieving data.');
     });
@@ -206,6 +208,34 @@ exports.assignUser = (req, res) => {
     .then(result => {
         if(!result || !result._id){
             return _res.cError(res, 'Could not assing user to ticket with id ' + req.params.id);
+        }
+        if(req.body.comments && req.body.comments.length > 1){
+            Ticket.updateOne({
+                _id: req.params.id
+            },{
+                $push: {
+                    responses: {
+                        type: req.body.comments[0].type || '',
+                        comment: req.body.comments[0].comment || '',
+                        attachment: req.body.comments[0].attachment || '',
+                        isActive: true,
+                        createdBy: userId || null
+                    }
+                }
+            },{ new: true }).then().catch();
+            Ticket.updateOne({
+                _id: req.params.id
+            },{
+                $push: {
+                    responses: {
+                        type: req.body.comments[1].type || '',
+                        comment: req.body.comments[1].comment || '',
+                        attachment: req.body.comments[1].attachment || '',
+                        isActive: true,
+                        createdBy: userId || null
+                    }
+                }
+            },{ new: true }).then().catch();
         }
         return _res.success(res, true, 'User assigned to ticket successfully.');
     }).catch(err => {
@@ -494,4 +524,33 @@ exports.searchMy = (req, res) => {
     }).catch(err => {
         return _res.error(res, err.message || 'Some error occurred while retrieving data.');
     });
+};
+
+
+let arrayResponse = (result, res, isSingle = false) => {
+    result = util.clone(result);
+    let users = [];
+    if(result && result.length > 0){
+     result.map((d, i) => {
+         if(d.assignedTo && users.indexOf(d.assignedTo) < 0){
+            users.push(d.assignedTo);
+         }
+     });
+     console.log(users);
+     User.find({_id: {$in: users}}, {_id: 1.0}).then(uResult => {
+         console.log(uResult)
+        result.forEach((d, i) => {
+            let user = uResult.find(u => u._id === d.assignedTo);
+            if(user && user._id){
+               d.assignedTo = user;
+            }
+            return d;
+        });
+        return _res.success(res, (isSingle && result && result.length > 0) ? result[0] : result);
+     }).catch(ex => {
+        return _res.success(res, (isSingle && result && result.length > 0) ? result[0] : result);
+     });
+    }else{
+        return _res.success(res, (isSingle && result && result.length > 0) ? result[0] : result);
+    }
 };
