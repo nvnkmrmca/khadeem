@@ -45,7 +45,7 @@ exports.findAll = (req, res) => {
     Ticket.find({
         isActive: true
     }).then(result => {
-        return _res.success(res, result);
+        arrayResponse(result, res);
     }).catch(err => {
         return _res.error(res, err.message || 'Some error occurred while retrieving data.');
     });
@@ -57,7 +57,7 @@ exports.findAllByCustomer = (req, res) => {
         customer: req.params.id,
         isActive: true
     }).then(result => {
-        return _res.success(res, result);
+        arrayResponse(result, res);
     }).catch(err => {
         return _res.error(res, err.message || 'Some error occurred while retrieving data.');
     });
@@ -91,7 +91,7 @@ exports.findAllByTeam = (req, res) => {
         team: req.params.id,
         isActive: true
     }).then(result => {
-        return _res.success(res, result);
+        arrayResponse(result, res);
     }).catch(err => {
         return _res.error(res, err.message || 'Some error occurred while retrieving data.');
     });
@@ -104,7 +104,7 @@ exports.findOne = (req, res) => {
         if(!result || !result._id) {
             return _res.cError(res, 'Record not found with id ' + req.params.id);
         }
-        return _res.success(res, result);
+        arrayResponse(result, res, true);
     }).catch(err => {
         if(err.kind === 'ObjectId') {
             return _res.nError(res, 'Record not found with id ' + req.params.id);
@@ -440,6 +440,12 @@ exports.search = (req, res) => {
     let query = {
         isActive: true
     };
+    if(req.body.fromDate){
+        query.createdAt = { $gt: req.body.fromDate };
+    }
+    if(req.body.toDate){
+        query.createdAt = { $lt: req.body.toDate };
+    }
     if(req.body.status){
         query.status = req.body.status;
     }
@@ -456,7 +462,7 @@ exports.search = (req, res) => {
         query.subject = req.body.subject;
     }
     if(req.body.tag){
-        query.tag.name = req.body.tag;
+        query["tags.name"] = req.body.tag;
     }
     if(req.body.location){
         query.location = req.body.location;
@@ -468,7 +474,7 @@ exports.search = (req, res) => {
         query.team = req.body.team;
     }
     Ticket.find(query).then(result => {
-        return _res.success(res, result);
+        arrayResponse(result, res);
     }).catch(err => {
         return _res.error(res, err.message || 'Some error occurred while retrieving data.');
     });
@@ -484,6 +490,12 @@ exports.searchMy = (req, res) => {
     let query = {
         isActive: true
     };
+    if(req.body.fromDate){
+        query.createdAt = { $gt: req.body.fromDate };
+    }
+    if(req.body.toDate){
+        query.createdAt = { $lt: req.body.toDate };
+    }
     if(req.body.status){
         query.status = req.body.status;
     }
@@ -500,7 +512,7 @@ exports.searchMy = (req, res) => {
         query.subject = req.body.subject;
     }
     if(req.body.tag){
-        query.tag.name = req.body.tag;
+        query["tags.name"] = req.body.tag;
     }
     if(req.body.location){
         query.location = req.body.location;
@@ -520,7 +532,7 @@ exports.searchMy = (req, res) => {
             query
         ]
     }).then(result => {
-        return _res.success(res, result);
+        arrayResponse(result, res);
     }).catch(err => {
         return _res.error(res, err.message || 'Some error occurred while retrieving data.');
     });
@@ -536,11 +548,11 @@ let arrayResponse = (result, res, isSingle = false) => {
             users.push(d.assignedTo);
          }
      });
-     console.log(users);
-     User.find({_id: {$in: users}}, {_id: 1.0}).then(uResult => {
-         console.log(uResult)
+     User.find({
+        _id: { $in: users }
+    }).then(uResult => {
         result.forEach((d, i) => {
-            let user = uResult.find(u => u._id === d.assignedTo);
+            let user = uResult.find(u => u._id.toString() === d.assignedTo);
             if(user && user._id){
                d.assignedTo = user;
             }
